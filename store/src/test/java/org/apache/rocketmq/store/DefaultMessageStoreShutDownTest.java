@@ -30,6 +30,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
@@ -50,7 +51,7 @@ public class DefaultMessageStoreShutDownTest {
     @Test
     public void testDispatchBehindWhenShutdown() {
         messageStore.shutdown();
-        assertTrue(!messageStore.shutDownNormal);
+        assertFalse(messageStore.shutDownNormal);
         File file = new File(StorePathConfigHelper.getAbortFile(messageStore.getMessageStoreConfig().getStorePathRootDir()));
         assertTrue(file.exists());
     }

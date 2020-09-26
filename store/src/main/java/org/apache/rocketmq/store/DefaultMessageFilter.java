@@ -21,6 +21,9 @@ import org.apache.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+/**
+ * @author weidian
+ */
 public class DefaultMessageFilter implements MessageFilter {
 
     private SubscriptionData subscriptionData;

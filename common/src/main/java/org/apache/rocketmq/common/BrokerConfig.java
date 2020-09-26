@@ -115,6 +115,7 @@ public class BrokerConfig {
 
     private boolean slaveReadEnable = false;
 
+    //消费慢则不可消费开关
     private boolean disableConsumeIfConsumerReadSlowly = false;
     private long consumerFallbehindThreshold = 1024L * 1024 * 1024 * 16;
 

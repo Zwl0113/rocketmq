@@ -28,17 +28,50 @@ import java.util.Collections;
 
 /**
  * Filter data of consumer.
+ * @author weidian
  */
 public class ConsumerFilterData {
 
+    /**
+     * 消费分组
+     */
     private String consumerGroup;
+    /**
+     * topic
+     */
     private String topic;
+
+    /**
+     * 表达式
+     */
     private String expression;
+    /**
+     * 表达类型
+     */
     private String expressionType;
+
+    /**
+     * 已编译的表达式类型
+     */
     private transient Expression compiledExpression;
+    /**
+     * 产生时间
+     */
     private long bornTime;
+
+    /**
+     * 死亡时间
+     */
     private long deadTime = 0;
+
+    /**
+     * 布隆过滤器
+     */
     private BloomFilterData bloomFilterData;
+
+    /**
+     * 客户端版本
+     */
     private long clientVersion;
 
     public boolean isDead() {

@@ -31,7 +31,7 @@ public class StoreTestUtil {
 
     private static final InternalLogger log = InternalLoggerFactory.getLogger(StoreTestUtil.class);
 
-    public static boolean isCommitLogAvailable(DefaultMessageStore store) {
+    private static boolean isCommitLogAvailable(DefaultMessageStore store) {
         try {
 
             Field serviceField = store.getClass().getDeclaredField("reputMessageService");

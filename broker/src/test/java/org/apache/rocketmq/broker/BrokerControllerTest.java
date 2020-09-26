@@ -23,6 +23,7 @@ import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.remoting.netty.NettyClientConfig;
 import org.apache.rocketmq.remoting.netty.NettyServerConfig;
 import org.apache.rocketmq.store.config.MessageStoreConfig;
+import org.assertj.core.api.AbstractBooleanAssert;
 import org.junit.After;
 import org.junit.Ignore;
 import org.junit.Test;

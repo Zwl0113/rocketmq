@@ -40,7 +40,7 @@ public class StoreTestBase {
 
     private static AtomicInteger port = new AtomicInteger(30000);
 
-    public static synchronized int nextPort() {
+    protected static synchronized int nextPort() {
         return port.addAndGet(5);
     }
 
@@ -86,7 +86,7 @@ public class StoreTestBase {
         return msg;
     }
 
-    public static String createBaseDir() {
+    protected static String createBaseDir() {
         String baseDir = System.getProperty("user.home") + File.separator + "unitteststore" + File.separator + UUID.randomUUID();
         final File file = new File(baseDir);
         if (file.exists()) {
@@ -95,7 +95,7 @@ public class StoreTestBase {
         return baseDir;
     }
 
-    public static boolean makeSureFileExists(String fileName) throws Exception {
+    protected static boolean makeSureFileExists(String fileName) throws Exception {
         File file = new File(fileName);
         MappedFile.ensureDirOK(file.getParent());
         return file.createNewFile();

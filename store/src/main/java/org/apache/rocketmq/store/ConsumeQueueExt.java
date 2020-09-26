@@ -30,11 +30,13 @@ import java.util.List;
 /**
  * Extend of consume queue, to store something not important,
  * such as message store time, filter bit map and etc.
+ * consumeQueue的扩展，用来存储一些不重要的信息，例如消息存储时间，过滤器，bitmap等
  * <p/>
- * <li>1. This class is used only by {@link ConsumeQueue}</li>
+ * <li>1. This class is used only by {@link ConsumeQueue}</li> 仅用来被cq使用
  * <li>2. And is week reliable.</li>
- * <li>3. Be careful, address returned is always less than 0.</li>
+ * <li>3. Be careful, address returned is always less than 0.</li> 注意 返回的地址总是比0小
  * <li>4. Pls keep this file small.</li>
+ * @author weidian
  */
 public class ConsumeQueueExt {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
@@ -180,8 +182,10 @@ public class ConsumeQueueExt {
 
     /**
      * Save to mapped buffer of file and return address.
+     * 保存到文件的mappedBuffer并返回地址
      * <p>
      * Be careful, this method is not thread safe.
+     * 注意这个方法线程不安全
      * </p>
      *
      * @return success: < 0: fail: >=0
@@ -409,7 +413,7 @@ public class ConsumeQueueExt {
      */
     public static class CqExtUnit {
         public static final short MIN_EXT_UNIT_SIZE
-            = 2 * 1 // size, 32k max
+            = 2 // size, 32k max
             + 8 * 2 // msg time + tagCode
             + 2; // bitMapSize
 

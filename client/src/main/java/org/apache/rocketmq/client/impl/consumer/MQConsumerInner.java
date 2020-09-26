@@ -26,6 +26,7 @@ import org.apache.rocketmq.common.protocol.heartbeat.SubscriptionData;
 
 /**
  * Consumer inner interface
+ * @author weidian
  */
 public interface MQConsumerInner {
     String groupName();

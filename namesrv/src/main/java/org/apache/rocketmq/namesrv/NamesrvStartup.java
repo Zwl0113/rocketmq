@@ -41,6 +41,10 @@ import org.apache.rocketmq.srvutil.ServerUtil;
 import org.apache.rocketmq.srvutil.ShutdownHookThread;
 import org.slf4j.LoggerFactory;
 
+/**
+ * NameSrv启动类
+ * @author weidian
+ */
 public class NamesrvStartup {
 
     private static InternalLogger log;
@@ -51,7 +55,7 @@ public class NamesrvStartup {
         main0(args);
     }
 
-    public static NamesrvController main0(String[] args) {
+    private static NamesrvController main0(String[] args) {
 
         try {
             NamesrvController controller = createNamesrvController(args);
@@ -68,7 +72,7 @@ public class NamesrvStartup {
         return null;
     }
 
-    public static NamesrvController createNamesrvController(String[] args) throws IOException, JoranException {
+    private static NamesrvController createNamesrvController(String[] args) throws IOException, JoranException {
         System.setProperty(RemotingCommand.REMOTING_VERSION_KEY, Integer.toString(MQVersion.CURRENT_VERSION));
         //PackageConflictDetect.detectFastjson();
 
@@ -123,6 +127,7 @@ public class NamesrvStartup {
         MixAll.printObjectProperties(log, namesrvConfig);
         MixAll.printObjectProperties(log, nettyServerConfig);
 
+
         final NamesrvController controller = new NamesrvController(namesrvConfig, nettyServerConfig);
 
         // remember all configs to prevent discard
@@ -137,6 +142,7 @@ public class NamesrvStartup {
             throw new IllegalArgumentException("NamesrvController is null");
         }
 
+        //nameSrvController核心初始化方法
         boolean initResult = controller.initialize();
         if (!initResult) {
             controller.shutdown();
@@ -151,6 +157,7 @@ public class NamesrvStartup {
             }
         }));
 
+        //启动netty和文件监听服务
         controller.start();
 
         return controller;
@@ -160,7 +167,7 @@ public class NamesrvStartup {
         controller.shutdown();
     }
 
-    public static Options buildCommandlineOptions(final Options options) {
+    private static Options buildCommandlineOptions(final Options options) {
         Option opt = new Option("c", "configFile", true, "Name server config properties file");
         opt.setRequired(false);
         options.addOption(opt);

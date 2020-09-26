@@ -75,9 +75,7 @@ public class ConsumerManager {
     }
 
     public void doChannelCloseEvent(final String remoteAddr, final Channel channel) {
-        Iterator<Entry<String, ConsumerGroupInfo>> it = this.consumerTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, ConsumerGroupInfo> next = it.next();
+        for (Entry<String, ConsumerGroupInfo> next : this.consumerTable.entrySet()) {
             ConsumerGroupInfo info = next.getValue();
             boolean removed = info.doChannelCloseEvent(remoteAddr, channel);
             if (removed) {
@@ -85,7 +83,7 @@ public class ConsumerManager {
                     ConsumerGroupInfo remove = this.consumerTable.remove(next.getKey());
                     if (remove != null) {
                         log.info("unregister consumer ok, no any connection, and remove consumer group, {}",
-                            next.getKey());
+                                next.getKey());
                         this.consumerIdsChangeListener.handle(ConsumerGroupEvent.UNREGISTER, next.getKey());
                     }
                 }
@@ -175,11 +173,9 @@ public class ConsumerManager {
 
     public HashSet<String> queryTopicConsumeByWho(final String topic) {
         HashSet<String> groups = new HashSet<>();
-        Iterator<Entry<String, ConsumerGroupInfo>> it = this.consumerTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, ConsumerGroupInfo> entry = it.next();
+        for (Entry<String, ConsumerGroupInfo> entry : this.consumerTable.entrySet()) {
             ConcurrentMap<String, SubscriptionData> subscriptionTable =
-                entry.getValue().getSubscriptionTable();
+                    entry.getValue().getSubscriptionTable();
             if (subscriptionTable.containsKey(topic)) {
                 groups.add(entry.getKey());
             }

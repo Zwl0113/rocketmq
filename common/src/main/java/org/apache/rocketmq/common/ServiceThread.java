@@ -30,8 +30,8 @@ public abstract class ServiceThread implements Runnable {
     private Thread thread;
     protected final CountDownLatch2 waitPoint = new CountDownLatch2(1);
     protected volatile AtomicBoolean hasNotified = new AtomicBoolean(false);
-    protected volatile boolean stopped = false;
-    protected boolean isDaemon = false;
+    private volatile boolean stopped = false;
+    private boolean isDaemon = false;
 
     //Make it able to restart the thread
     private final AtomicBoolean started = new AtomicBoolean(false);
@@ -48,6 +48,7 @@ public abstract class ServiceThread implements Runnable {
             return;
         }
         stopped = false;
+        //新建守护线程
         this.thread = new Thread(this, getServiceName());
         this.thread.setDaemon(isDaemon);
         this.thread.start();
@@ -126,6 +127,12 @@ public abstract class ServiceThread implements Runnable {
         }
     }
 
+    /**
+     * 多线程的交互作用，第一次调用阻塞，第二次则可唤醒
+     * 1.线程第一次调用该方法时初始值为false，因此第一次执行到await处被阻塞
+     * 2.第二次调用该线程的wakeup方法，相当于唤醒了该线程，从await之后继续执行
+     * @param interval
+     */
     protected void waitForRunning(long interval) {
         if (hasNotified.compareAndSet(true, false)) {
             this.onWaitEnd();

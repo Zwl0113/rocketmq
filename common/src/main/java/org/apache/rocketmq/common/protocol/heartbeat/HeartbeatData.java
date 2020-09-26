@@ -24,6 +24,9 @@ import java.util.HashSet;
 import java.util.Set;
 import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
 
+/**
+ * @author weidian
+ */
 public class HeartbeatData extends RemotingSerializable {
     private String clientID;
     private Set<ProducerData> producerDataSet = new HashSet<ProducerData>();

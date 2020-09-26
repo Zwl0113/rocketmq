@@ -36,8 +36,10 @@ public class RemotingCommand {
     public static final String SERIALIZE_TYPE_ENV = "ROCKETMQ_SERIALIZE_TYPE";
     public static final String REMOTING_VERSION_KEY = "rocketmq.remoting.version";
     private static final InternalLogger log = InternalLoggerFactory.getLogger(RemotingHelper.ROCKETMQ_REMOTING);
-    private static final int RPC_TYPE = 0; // 0, REQUEST_COMMAND
-    private static final int RPC_ONEWAY = 1; // 0, RPC
+    // 0, REQUEST_COMMAND
+    private static final int RPC_TYPE = 0;
+    // 0, RPC
+    private static final int RPC_ONEWAY = 1;
     private static final Map<Class<? extends CommandCustomHeader>, Field[]> CLASS_HASH_MAP =
         new HashMap<Class<? extends CommandCustomHeader>, Field[]>();
     private static final Map<Class, String> CANONICAL_NAME_CACHE = new HashMap<Class, String>();
@@ -93,6 +95,10 @@ public class RemotingCommand {
         return cmd;
     }
 
+    /**
+     * 从缓存中获取版本，如果缓存中不存在则获取JVM参数并设置到缓存中
+     * @param cmd
+     */
     private static void setCmdVersion(RemotingCommand cmd) {
         if (configVersion >= 0) {
             cmd.setVersion(configVersion);
@@ -120,11 +126,8 @@ public class RemotingCommand {
 
         if (classHeader != null) {
             try {
-                CommandCustomHeader objectHeader = classHeader.newInstance();
-                cmd.customHeader = objectHeader;
-            } catch (InstantiationException e) {
-                return null;
-            } catch (IllegalAccessException e) {
+                cmd.customHeader = classHeader.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
                 return null;
             }
         }
@@ -157,12 +160,13 @@ public class RemotingCommand {
             bodyData = new byte[bodyLength];
             byteBuffer.get(bodyData);
         }
+        assert cmd != null;
         cmd.body = bodyData;
 
         return cmd;
     }
 
-    public static int getHeaderLength(int length) {
+    private static int getHeaderLength(int length) {
         return length & 0xFFFFFF;
     }
 
@@ -183,7 +187,7 @@ public class RemotingCommand {
         return null;
     }
 
-    public static SerializeType getProtocolType(int source) {
+    private static SerializeType getProtocolType(int source) {
         return SerializeType.valueOf((byte) ((source >> 24) & 0xFF));
     }
 
@@ -208,7 +212,7 @@ public class RemotingCommand {
         return true;
     }
 
-    public static byte[] markProtocolType(int source, SerializeType type) {
+    static byte[] markProtocolType(int source, SerializeType type) {
         byte[] result = new byte[4];
 
         result[0] = type.getCode();
@@ -236,9 +240,7 @@ public class RemotingCommand {
         CommandCustomHeader objectHeader;
         try {
             objectHeader = classHeader.newInstance();
-        } catch (InstantiationException e) {
-            return null;
-        } catch (IllegalAccessException e) {
+        } catch (InstantiationException | IllegalAccessException e) {
             return null;
         }
 

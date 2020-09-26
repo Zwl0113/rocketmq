@@ -18,10 +18,17 @@ package org.apache.rocketmq.common;
 
 import org.apache.rocketmq.common.constant.PermName;
 
+import java.util.Objects;
+
+/**
+ * description: topic配置数据结构
+ * 包含topic名字，读队列，写队列，权限等参数
+ * @author weidian
+ */
 public class TopicConfig {
     private static final String SEPARATOR = " ";
-    public static int defaultReadQueueNums = 16;
-    public static int defaultWriteQueueNums = 16;
+    private static int defaultReadQueueNums = 16;
+    private static int defaultWriteQueueNums = 16;
     private String topicName;
     private int readQueueNums = defaultReadQueueNums;
     private int writeQueueNums = defaultWriteQueueNums;
@@ -45,23 +52,21 @@ public class TopicConfig {
     }
 
     public String encode() {
-        StringBuilder sb = new StringBuilder();
-        sb.append(this.topicName);
-        sb.append(SEPARATOR);
-        sb.append(this.readQueueNums);
-        sb.append(SEPARATOR);
-        sb.append(this.writeQueueNums);
-        sb.append(SEPARATOR);
-        sb.append(this.perm);
-        sb.append(SEPARATOR);
-        sb.append(this.topicFilterType);
 
-        return sb.toString();
+        return this.topicName +
+                SEPARATOR +
+                this.readQueueNums +
+                SEPARATOR +
+                this.writeQueueNums +
+                SEPARATOR +
+                this.perm +
+                SEPARATOR +
+                this.topicFilterType;
     }
 
     public boolean decode(final String in) {
         String[] strs = in.split(SEPARATOR);
-        if (strs != null && strs.length == 5) {
+        if (strs.length == 5) {
             this.topicName = strs[0];
 
             this.readQueueNums = Integer.parseInt(strs[1]);
@@ -153,7 +158,7 @@ public class TopicConfig {
             return false;
         if (order != that.order)
             return false;
-        if (topicName != null ? !topicName.equals(that.topicName) : that.topicName != null)
+        if (!Objects.equals(topicName, that.topicName))
             return false;
         return topicFilterType == that.topicFilterType;
 

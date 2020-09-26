@@ -20,6 +20,9 @@ package org.apache.rocketmq.common.protocol.body;
 import org.apache.rocketmq.common.protocol.heartbeat.SubscriptionData;
 import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
 
+/**
+ * @author weidian
+ */
 public class CheckClientRequestBody extends RemotingSerializable {
 
     private String clientId;

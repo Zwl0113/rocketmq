@@ -171,16 +171,9 @@ public class ConsumeQueueExtTest {
             int lastFileUnitCount = unitCount % countPerFile;
 
             int fileCount = unitCount / countPerFile + 1;
-            if (lastFileUnitCount == 0) {
-                fileCount -= 1;
-            }
 
-            if (lastFileUnitCount == 0) {
-                assertThat(loadCqExt.unDecorate(loadCqExt.getMaxAddress()) % cqExtFileSize).isEqualTo(0);
-            } else {
-                assertThat(loadCqExt.unDecorate(loadCqExt.getMaxAddress()))
-                    .isEqualTo(lastFileUnitCount * unitSizeWithBitMap + (fileCount - 1) * cqExtFileSize);
-            }
+            assertThat(loadCqExt.unDecorate(loadCqExt.getMaxAddress()))
+                .isEqualTo(lastFileUnitCount * unitSizeWithBitMap + (fileCount - 1) * cqExtFileSize);
         } finally {
             putCqExt.destroy();
             loadCqExt.destroy();

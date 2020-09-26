@@ -31,14 +31,17 @@ import org.apache.rocketmq.store.MessageFilter;
 import java.nio.ByteBuffer;
 import java.util.Map;
 
+/**
+ * @author weidian
+ */
 public class ExpressionMessageFilter implements MessageFilter {
 
     protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.FILTER_LOGGER_NAME);
 
-    protected final SubscriptionData subscriptionData;
-    protected final ConsumerFilterData consumerFilterData;
-    protected final ConsumerFilterManager consumerFilterManager;
-    protected final boolean bloomDataValid;
+    final SubscriptionData subscriptionData;
+    final ConsumerFilterData consumerFilterData;
+    final ConsumerFilterManager consumerFilterManager;
+    private final boolean bloomDataValid;
 
     public ExpressionMessageFilter(SubscriptionData subscriptionData, ConsumerFilterData consumerFilterData,
         ConsumerFilterManager consumerFilterManager) {
@@ -50,11 +53,7 @@ public class ExpressionMessageFilter implements MessageFilter {
             return;
         }
         BloomFilter bloomFilter = this.consumerFilterManager.getBloomFilter();
-        if (bloomFilter != null && bloomFilter.isValid(consumerFilterData.getBloomFilterData())) {
-            bloomDataValid = true;
-        } else {
-            bloomDataValid = false;
-        }
+        bloomDataValid = bloomFilter != null && bloomFilter.isValid(consumerFilterData.getBloomFilterData());
     }
 
     @Override

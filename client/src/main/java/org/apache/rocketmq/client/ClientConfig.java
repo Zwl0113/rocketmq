@@ -31,6 +31,7 @@ import org.apache.rocketmq.remoting.protocol.LanguageCode;
 
 /**
  * Client Common configuration
+ * @author weidian
  */
 public class ClientConfig {
     public static final String SEND_MESSAGE_WITH_VIP_CHANNEL_PROPERTY = "com.rocketmq.sendMessageWithVIPChannel";
@@ -93,7 +94,7 @@ public class ClientConfig {
     }
 
     public void changeInstanceNameToPID() {
-        if (this.instanceName.equals("DEFAULT")) {
+        if ("DEFAULT".equals(this.instanceName)) {
             this.instanceName = String.valueOf(UtilAll.getPid());
         }
     }
@@ -133,9 +134,7 @@ public class ClientConfig {
         if (StringUtils.isEmpty(this.getNamespace())) {
             return queues;
         }
-        Iterator<MessageQueue> iter = queues.iterator();
-        while (iter.hasNext()) {
-            MessageQueue queue = iter.next();
+        for (MessageQueue queue : queues) {
             queue.setTopic(withNamespace(queue.getTopic()));
         }
         return queues;

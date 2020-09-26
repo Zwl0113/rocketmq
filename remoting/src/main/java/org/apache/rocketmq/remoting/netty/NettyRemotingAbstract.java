@@ -89,6 +89,7 @@ public abstract class NettyRemotingAbstract {
 
     /**
      * The default request processor to use in case there is no exact match in {@link #processorTable} per request code.
+     * 每个请求码在processorTable中没有匹配的话走默认的请求处理器
      */
     protected Pair<NettyRequestProcessor, ExecutorService> defaultRequestProcessor;
 
@@ -412,25 +413,32 @@ public abstract class NettyRemotingAbstract {
 
         try {
             final ResponseFuture responseFuture = new ResponseFuture(channel, opaque, timeoutMillis, null, null);
+            //缓存请求id对应的相应结果
             this.responseTable.put(opaque, responseFuture);
             final SocketAddress addr = channel.remoteAddress();
             channel.writeAndFlush(request).addListener(new ChannelFutureListener() {
                 @Override
                 public void operationComplete(ChannelFuture f) throws Exception {
                     if (f.isSuccess()) {
+                        //请求flush到channel成功
                         responseFuture.setSendRequestOK(true);
                         return;
                     } else {
+                        //失败
                         responseFuture.setSendRequestOK(false);
                     }
 
+                    //移除请求
                     responseTable.remove(opaque);
+                    //设置异常原因
                     responseFuture.setCause(f.cause());
+                    //
                     responseFuture.putResponse(null);
                     log.warn("send a request command to channel <" + addr + "> failed.");
                 }
             });
 
+            //
             RemotingCommand responseCommand = responseFuture.waitResponse(timeoutMillis);
             if (null == responseCommand) {
                 if (responseFuture.isSendRequestOK()) {

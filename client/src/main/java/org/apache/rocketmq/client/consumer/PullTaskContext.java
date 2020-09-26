@@ -16,6 +16,9 @@
  */
 package org.apache.rocketmq.client.consumer;
 
+/**
+ * @author weidian
+ */
 public class PullTaskContext {
 
     private int pullNextDelayTimeMillis = 200;

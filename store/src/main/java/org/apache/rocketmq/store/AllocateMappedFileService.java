@@ -131,6 +131,7 @@ public class AllocateMappedFileService extends ServiceThread {
         }
     }
 
+    @Override
     public void run() {
         log.info(this.getServiceName() + " service started");
 
@@ -184,9 +185,8 @@ public class AllocateMappedFileService extends ServiceThread {
                 }
 
                 // pre write mappedFile
-                if (mappedFile.getFileSize() >= this.messageStore.getMessageStoreConfig()
-                    .getMappedFileSizeCommitLog()
-                    &&
+                if (mappedFile.getFileSize() >=
+                        this.messageStore.getMessageStoreConfig().getMappedFileSizeCommitLog() &&
                     this.messageStore.getMessageStoreConfig().isWarmMapedFileEnable()) {
                     mappedFile.warmMappedFile(this.messageStore.getMessageStoreConfig().getFlushDiskType(),
                         this.messageStore.getMessageStoreConfig().getFlushLeastPagesWhenWarmMapedFile());

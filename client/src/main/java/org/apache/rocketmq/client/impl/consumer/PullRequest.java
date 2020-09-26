@@ -18,6 +18,9 @@ package org.apache.rocketmq.client.impl.consumer;
 
 import org.apache.rocketmq.common.message.MessageQueue;
 
+/**
+ * @author weidian
+ */
 public class PullRequest {
     private String consumerGroup;
     private MessageQueue messageQueue;
@@ -81,10 +84,12 @@ public class PullRequest {
         } else if (!consumerGroup.equals(other.consumerGroup))
             return false;
         if (messageQueue == null) {
-            if (other.messageQueue != null)
+            if (other.messageQueue != null) {
                 return false;
-        } else if (!messageQueue.equals(other.messageQueue))
+            }
+        } else if (!messageQueue.equals(other.messageQueue)) {
             return false;
+        }
         return true;
     }
 

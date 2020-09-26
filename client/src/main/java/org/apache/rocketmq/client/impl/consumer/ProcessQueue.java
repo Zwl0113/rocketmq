@@ -37,11 +37,23 @@ import org.apache.rocketmq.common.protocol.body.ProcessQueueInfo;
 
 /**
  * Queue consumption snapshot
+ * 消费队列快照
+ * @author weidian
  */
 public class ProcessQueue {
+    /**
+     * 负载均衡锁最大存活时间
+     */
     public final static long REBALANCE_LOCK_MAX_LIVE_TIME =
         Long.parseLong(System.getProperty("rocketmq.client.rebalance.lockMaxLiveTime", "30000"));
+    /**
+     * 负载均衡锁间隔
+     */
     public final static long REBALANCE_LOCK_INTERVAL = Long.parseLong(System.getProperty("rocketmq.client.rebalance.lockInterval", "20000"));
+
+    /**
+     * pull的最大空闲时间
+     */
     private final static long PULL_MAX_IDLE_TIME = Long.parseLong(System.getProperty("rocketmq.client.pull.pullMaxIdleTime", "120000"));
     private final InternalLogger log = ClientLogger.getLog();
     private final ReadWriteLock lockTreeMap = new ReentrantReadWriteLock();
@@ -63,29 +75,39 @@ public class ProcessQueue {
     private volatile boolean consuming = false;
     private volatile long msgAccCnt = 0;
 
-    public boolean isLockExpired() {
+    /**
+     * 判断锁是否过期
+     * @return
+     */
+    boolean isLockExpired() {
         return (System.currentTimeMillis() - this.lastLockTimestamp) > REBALANCE_LOCK_MAX_LIVE_TIME;
     }
 
-    public boolean isPullExpired() {
+    /**
+     * 判断拉取是否过期
+     * @return
+     */
+    boolean isPullExpired() {
         return (System.currentTimeMillis() - this.lastPullTimestamp) > PULL_MAX_IDLE_TIME;
     }
 
     /**
+     * 清理过期的消息
      * @param pushConsumer
      */
-    public void cleanExpiredMsg(DefaultMQPushConsumer pushConsumer) {
+    void cleanExpiredMsg(DefaultMQPushConsumer pushConsumer) {
         if (pushConsumer.getDefaultMQPushConsumerImpl().isConsumeOrderly()) {
             return;
         }
 
-        int loop = msgTreeMap.size() < 16 ? msgTreeMap.size() : 16;
+        int loop = Math.min(msgTreeMap.size(), 16);
         for (int i = 0; i < loop; i++) {
             MessageExt msg = null;
             try {
                 this.lockTreeMap.readLock().lockInterruptibly();
                 try {
-                    if (!msgTreeMap.isEmpty() && System.currentTimeMillis() - Long.parseLong(MessageAccessor.getConsumeStartTimeStamp(msgTreeMap.firstEntry().getValue())) > pushConsumer.getConsumeTimeout() * 60 * 1000) {
+                    if (!msgTreeMap.isEmpty() && System.currentTimeMillis() -
+                            Long.parseLong(MessageAccessor.getConsumeStartTimeStamp(msgTreeMap.firstEntry().getValue())) > pushConsumer.getConsumeTimeout() * 60 * 1000) {
                         msg = msgTreeMap.firstEntry().getValue();
                     } else {
 
@@ -165,7 +187,7 @@ public class ProcessQueue {
         return dispatchToConsume;
     }
 
-    public long getMaxSpan() {
+    long getMaxSpan() {
         try {
             this.lockTreeMap.readLock().lockInterruptibly();
             try {
@@ -280,7 +302,7 @@ public class ProcessQueue {
         return -1;
     }
 
-    public void makeMessageToCosumeAgain(List<MessageExt> msgs) {
+    void makeMessageToCosumeAgain(List<MessageExt> msgs) {
         try {
             this.lockTreeMap.writeLock().lockInterruptibly();
             try {
@@ -296,7 +318,7 @@ public class ProcessQueue {
         }
     }
 
-    public List<MessageExt> takeMessags(final int batchSize) {
+    List<MessageExt> takeMessags(final int batchSize) {
         List<MessageExt> result = new ArrayList<MessageExt>(batchSize);
         final long now = System.currentTimeMillis();
         try {
@@ -328,7 +350,7 @@ public class ProcessQueue {
         return result;
     }
 
-    public boolean hasTempMessage() {
+    boolean hasTempMessage() {
         try {
             this.lockTreeMap.readLock().lockInterruptibly();
             try {
@@ -419,7 +441,7 @@ public class ProcessQueue {
             info.setDroped(this.dropped);
             info.setLastPullTimestamp(this.lastPullTimestamp);
             info.setLastConsumeTimestamp(this.lastConsumeTimestamp);
-        } catch (Exception e) {
+        } catch (Exception ignored) {
         } finally {
             this.lockTreeMap.readLock().unlock();
         }

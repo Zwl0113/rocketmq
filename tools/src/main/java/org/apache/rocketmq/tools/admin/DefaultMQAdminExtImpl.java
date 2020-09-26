@@ -89,6 +89,9 @@ import org.apache.rocketmq.remoting.exception.RemotingTimeoutException;
 import org.apache.rocketmq.tools.admin.api.MessageTrack;
 import org.apache.rocketmq.tools.admin.api.TrackType;
 
+/**
+ * @author weidian
+ */
 public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
 
     private final InternalLogger log = ClientLogger.getLog();
@@ -147,8 +150,6 @@ public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
     @Override
     public void shutdown() {
         switch (this.serviceState) {
-            case CREATE_JUST:
-                break;
             case RUNNING:
                 this.mqClientInstance.unregisterAdminExt(this.defaultMQAdminExt.getAdminExtGroup());
                 this.mqClientInstance.shutdown();
@@ -157,15 +158,14 @@ public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
                 this.serviceState = ServiceState.SHUTDOWN_ALREADY;
                 break;
             case SHUTDOWN_ALREADY:
-                break;
+            case CREATE_JUST:
             default:
                 break;
         }
     }
 
     @Override
-    public void updateBrokerConfig(String brokerAddr,
-        Properties properties) throws RemotingConnectException, RemotingSendRequestException,
+    public void updateBrokerConfig(String brokerAddr, Properties properties) throws RemotingConnectException, RemotingSendRequestException,
         RemotingTimeoutException, UnsupportedEncodingException, InterruptedException, MQBrokerException {
         this.mqClientInstance.getMQClientAPIImpl().updateBrokerConfig(brokerAddr, properties, timeoutMillis);
     }
@@ -566,7 +566,7 @@ public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
     @Override
     public Map<String, Map<MessageQueue, Long>> getConsumeStatus(String topic, String group,
         String clientAddr) throws RemotingException,
-        MQBrokerException, InterruptedException, MQClientException {
+            InterruptedException, MQClientException {
         TopicRouteData topicRouteData = this.examineTopicRouteInfo(topic);
         List<BrokerData> brokerDatas = topicRouteData.getBrokerDatas();
         if (brokerDatas != null && brokerDatas.size() > 0) {
@@ -833,13 +833,11 @@ public class DefaultMQAdminExtImpl implements MQAdminExt, MQAdminExtInner {
 
                     if (ifConsumed) {
                         mt.setTrackType(TrackType.CONSUMED);
-                        Iterator<Entry<String, SubscriptionData>> it = cc.getSubscriptionTable().entrySet().iterator();
-                        while (it.hasNext()) {
-                            Entry<String, SubscriptionData> next = it.next();
+                        for (Entry<String, SubscriptionData> next : cc.getSubscriptionTable().entrySet()) {
                             if (next.getKey().equals(msg.getTopic())) {
                                 if (next.getValue().getTagsSet().contains(msg.getTags())
-                                    || next.getValue().getTagsSet().contains("*")
-                                    || next.getValue().getTagsSet().isEmpty()) {
+                                        || next.getValue().getTagsSet().contains("*")
+                                        || next.getValue().getTagsSet().isEmpty()) {
                                 } else {
                                     mt.setTrackType(TrackType.CONSUMED_BUT_FILTERED);
                                 }

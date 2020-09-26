@@ -85,9 +85,7 @@ public class ConsumerOffsetManager extends ConfigManager {
     public Set<String> whichTopicByConsumer(final String group) {
         Set<String> topics = new HashSet<String>();
 
-        Iterator<Entry<String, ConcurrentMap<Integer, Long>>> it = this.offsetTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, ConcurrentMap<Integer, Long>> next = it.next();
+        for (Entry<String, ConcurrentMap<Integer, Long>> next : this.offsetTable.entrySet()) {
             String topicAtGroup = next.getKey();
             String[] arrays = topicAtGroup.split(TOPIC_GROUP_SEPARATOR);
             if (arrays.length == 2) {
@@ -103,9 +101,7 @@ public class ConsumerOffsetManager extends ConfigManager {
     public Set<String> whichGroupByTopic(final String topic) {
         Set<String> groups = new HashSet<String>();
 
-        Iterator<Entry<String, ConcurrentMap<Integer, Long>>> it = this.offsetTable.entrySet().iterator();
-        while (it.hasNext()) {
-            Entry<String, ConcurrentMap<Integer, Long>> next = it.next();
+        for (Entry<String, ConcurrentMap<Integer, Long>> next : this.offsetTable.entrySet()) {
             String topicAtGroup = next.getKey();
             String[] arrays = topicAtGroup.split(TOPIC_GROUP_SEPARATOR);
             if (arrays.length == 2) {
@@ -152,6 +148,7 @@ public class ConsumerOffsetManager extends ConfigManager {
         return -1;
     }
 
+    @Override
     public String encode() {
         return this.encode(false);
     }
@@ -171,6 +168,7 @@ public class ConsumerOffsetManager extends ConfigManager {
         }
     }
 
+    @Override
     public String encode(final boolean prettyFormat) {
         return RemotingSerializable.toJson(this, prettyFormat);
     }
@@ -189,12 +187,7 @@ public class ConsumerOffsetManager extends ConfigManager {
         Set<String> topicGroups = this.offsetTable.keySet();
         if (!UtilAll.isBlank(filterGroups)) {
             for (String group : filterGroups.split(",")) {
-                Iterator<String> it = topicGroups.iterator();
-                while (it.hasNext()) {
-                    if (group.equals(it.next().split(TOPIC_GROUP_SEPARATOR)[1])) {
-                        it.remove();
-                    }
-                }
+                topicGroups.removeIf(s -> group.equals(s.split(TOPIC_GROUP_SEPARATOR)[1]));
             }
         }
 

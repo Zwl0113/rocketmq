@@ -63,7 +63,7 @@ public class ConsumeQueueTest {
         }
     }
 
-    public MessageExtBrokerInner buildMessage() {
+    private MessageExtBrokerInner buildMessage() {
         MessageExtBrokerInner msg = new MessageExtBrokerInner();
         msg.setTopic(topic);
         msg.setTags("TAG1");
@@ -83,7 +83,7 @@ public class ConsumeQueueTest {
         return msg;
     }
 
-    public MessageExtBrokerInner buildIPv6HostMessage() {
+    private MessageExtBrokerInner buildIPv6HostMessage() {
         MessageExtBrokerInner msg = new MessageExtBrokerInner();
         msg.setTopic(topic);
         msg.setTags("TAG1");
@@ -106,8 +106,8 @@ public class ConsumeQueueTest {
         return msg;
     }
 
-    public MessageStoreConfig buildStoreConfig(int commitLogFileSize, int cqFileSize,
-        boolean enableCqExt, int cqExtFileSize) {
+    private MessageStoreConfig buildStoreConfig(int commitLogFileSize, int cqFileSize,
+                                                boolean enableCqExt, int cqExtFileSize) {
         MessageStoreConfig messageStoreConfig = new MessageStoreConfig();
         messageStoreConfig.setMappedFileSizeCommitLog(commitLogFileSize);
         messageStoreConfig.setMappedFileSizeConsumeQueue(cqFileSize);
@@ -121,7 +121,7 @@ public class ConsumeQueueTest {
         return messageStoreConfig;
     }
 
-    protected DefaultMessageStore gen() throws Exception {
+    private DefaultMessageStore gen() throws Exception {
         MessageStoreConfig messageStoreConfig = buildStoreConfig(
             commitLogFileSize, cqFileSize, true, cqExtFileSize
         );
@@ -131,13 +131,9 @@ public class ConsumeQueueTest {
         DefaultMessageStore master = new DefaultMessageStore(
             messageStoreConfig,
             new BrokerStatsManager(brokerConfig.getBrokerClusterName()),
-            new MessageArrivingListener() {
-                @Override
-                public void arriving(String topic, int queueId, long logicOffset, long tagsCode,
-                    long msgStoreTime, byte[] filterBitMap, Map<String, String> properties) {
+                (topic, queueId, logicOffset, tagsCode, msgStoreTime, filterBitMap, properties) -> {
                 }
-            }
-            , brokerConfig);
+                , brokerConfig);
 
         assertThat(master.load()).isTrue();
 
@@ -146,7 +142,7 @@ public class ConsumeQueueTest {
         return master;
     }
 
-    protected void putMsg(DefaultMessageStore master) throws Exception {
+    private void putMsg(DefaultMessageStore master) throws Exception {
         long totalMsgs = 200;
 
         for (long i = 0; i < totalMsgs; i++) {
@@ -158,7 +154,7 @@ public class ConsumeQueueTest {
         }
     }
 
-    protected void deleteDirectory(String rootPath) {
+    private void deleteDirectory(String rootPath) {
         File file = new File(rootPath);
         deleteFile(file);
     }
@@ -198,7 +194,8 @@ public class ConsumeQueueTest {
             SelectMappedBufferResult result = messageStore.getCommitLog().getData(0);
             assertThat(result != null).isTrue();
 
-            DispatchRequest dispatchRequest = messageStore.getCommitLog().checkMessageAndReturnSize(result.getByteBuffer(), false, false);
+            DispatchRequest dispatchRequest = messageStore.getCommitLog().checkMessageAndReturnSize(
+                    result.getByteBuffer(), false, false);
 
             assertThat(cq).isNotNull();
 
@@ -227,6 +224,7 @@ public class ConsumeQueueTest {
             assertThat(Boolean.FALSE).isTrue();
         }
 
+        assert master != null;
         master.getDispatcherList().addFirst(new CommitLogDispatcher() {
 
             @Override

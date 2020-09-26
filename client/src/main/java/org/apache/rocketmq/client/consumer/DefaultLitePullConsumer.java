@@ -32,6 +32,9 @@ import org.apache.rocketmq.common.protocol.NamespaceUtil;
 import org.apache.rocketmq.common.protocol.heartbeat.MessageModel;
 import org.apache.rocketmq.remoting.RPCHook;
 
+/**
+ * @author weidian
+ */
 public class DefaultLitePullConsumer extends ClientConfig implements LitePullConsumer {
 
     private final DefaultLitePullConsumerImpl defaultLitePullConsumerImpl;

@@ -19,10 +19,14 @@ package org.apache.rocketmq.client.consumer;
 import java.util.Set;
 import org.apache.rocketmq.common.message.MessageQueue;
 
+/**
+ * @author weidian
+ */
 public interface TopicMessageQueueChangeListener {
     /**
      * This method will be invoked in the condition of queue numbers changed, These scenarios occur when the topic is
      * expanded or shrunk.
+     * 当队列数改变的时候调用这个方法，会发生topic的扩大和缩小
      *
      * @param messageQueues
      */

@@ -19,6 +19,7 @@ package org.apache.rocketmq.store;
 
 /**
  * Dispatcher of commit log.
+ * @author weidian
  */
 public interface CommitLogDispatcher {
 

@@ -38,6 +38,9 @@ import org.apache.rocketmq.logging.InternalLogger;
 import org.apache.rocketmq.logging.InternalLoggerFactory;
 import org.apache.rocketmq.remoting.protocol.RemotingSerializable;
 
+/**
+ * @author weidian
+ */
 public class RegisterBrokerBody extends RemotingSerializable {
 
     private static final InternalLogger LOGGER = InternalLoggerFactory.getLogger(LoggerName.COMMON_LOGGER_NAME);
@@ -54,7 +57,6 @@ public class RegisterBrokerBody extends RemotingSerializable {
         DeflaterOutputStream outputStream = new DeflaterOutputStream(byteArrayOutputStream, new Deflater(Deflater.BEST_COMPRESSION));
         DataVersion dataVersion = topicConfigSerializeWrapper.getDataVersion();
         ConcurrentMap<String, TopicConfig> topicConfigTable = cloneTopicConfigTable(topicConfigSerializeWrapper.getTopicConfigTable());
-        assert topicConfigTable != null;
         try {
             byte[] buffer = dataVersion.encode();
 

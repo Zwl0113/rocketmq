@@ -24,12 +24,17 @@ import java.nio.channels.WritableByteChannel;
 import java.util.List;
 import org.apache.rocketmq.store.QueryMessageResult;
 
+/**
+ * description: 查询的结果消息转化类
+ * @author weidian
+ */
 public class QueryMessageTransfer extends AbstractReferenceCounted implements FileRegion {
     private final ByteBuffer byteBufferHeader;
     private final QueryMessageResult queryMessageResult;
 
     /**
      * Bytes which were transferred already.
+     * 已经转化的bytes
      */
     private long transferred;
 

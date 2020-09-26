@@ -736,6 +736,7 @@ public class DLedgerCommitLog extends CommitLog {
             this.sbr = sbr;
         }
 
+        @Override
         public synchronized void release() {
             super.release();
             if (sbr != null) {

@@ -33,6 +33,9 @@ import org.apache.rocketmq.store.DefaultMessageStore;
 import org.apache.rocketmq.store.DispatchRequest;
 import org.apache.rocketmq.store.config.StorePathConfigHelper;
 
+/**
+ * @author weidian
+ */
 public class IndexService {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.STORE_LOGGER_NAME);
     /**
@@ -50,6 +53,8 @@ public class IndexService {
         this.defaultMessageStore = store;
         this.hashSlotNum = store.getMessageStoreConfig().getMaxHashSlotNum();
         this.indexNum = store.getMessageStoreConfig().getMaxIndexNum();
+
+        // /home/www/store/index/
         this.storePath =
             StorePathConfigHelper.getStorePathIndex(store.getMessageStoreConfig().getStorePathRootDir());
     }
@@ -62,7 +67,9 @@ public class IndexService {
             Arrays.sort(files);
             for (File file : files) {
                 try {
+                    //生成索引文件
                     IndexFile f = new IndexFile(file.getPath(), this.hashSlotNum, this.indexNum, 0, 0);
+                    //加载文件头
                     f.load();
 
                     if (!lastExitOK) {
@@ -74,6 +81,7 @@ public class IndexService {
                     }
 
                     log.info("load index file OK, " + f.getFileName());
+                    //添加到索引文件列表中
                     this.indexFileList.add(f);
                 } catch (IOException e) {
                     log.error("load file {} error", file, e);
@@ -202,37 +210,38 @@ public class IndexService {
         IndexFile indexFile = retryGetAndCreateIndexFile();
         if (indexFile != null) {
             long endPhyOffset = indexFile.getEndPhyOffset();
-            DispatchRequest msg = req;
-            String topic = msg.getTopic();
-            String keys = msg.getKeys();
-            if (msg.getCommitLogOffset() < endPhyOffset) {
+            String topic = req.getTopic();
+            String keys = req.getKeys();
+            if (req.getCommitLogOffset() < endPhyOffset) {
                 return;
             }
 
-            final int tranType = MessageSysFlag.getTransactionValue(msg.getSysFlag());
+            final int tranType = MessageSysFlag.getTransactionValue(req.getSysFlag());
             switch (tranType) {
                 case MessageSysFlag.TRANSACTION_NOT_TYPE:
                 case MessageSysFlag.TRANSACTION_PREPARED_TYPE:
                 case MessageSysFlag.TRANSACTION_COMMIT_TYPE:
                     break;
                 case MessageSysFlag.TRANSACTION_ROLLBACK_TYPE:
+                default:
                     return;
             }
 
+            //生成唯一索引
             if (req.getUniqKey() != null) {
-                indexFile = putKey(indexFile, msg, buildKey(topic, req.getUniqKey()));
+                indexFile = putKey(indexFile, req, buildKey(topic, req.getUniqKey()));
                 if (indexFile == null) {
                     log.error("putKey error commitlog {} uniqkey {}", req.getCommitLogOffset(), req.getUniqKey());
                     return;
                 }
             }
 
+            //生成普通索引
             if (keys != null && keys.length() > 0) {
                 String[] keyset = keys.split(MessageConst.KEY_SEPARATOR);
-                for (int i = 0; i < keyset.length; i++) {
-                    String key = keyset[i];
+                for (String key : keyset) {
                     if (key.length() > 0) {
-                        indexFile = putKey(indexFile, msg, buildKey(topic, key));
+                        indexFile = putKey(indexFile, req, buildKey(topic, key));
                         if (indexFile == null) {
                             log.error("putKey error commitlog {} uniqkey {}", req.getCommitLogOffset(), req.getUniqKey());
                             return;
@@ -265,13 +274,14 @@ public class IndexService {
      *
      * @return {@link IndexFile} or null on failure.
      */
-    public IndexFile retryGetAndCreateIndexFile() {
+    private IndexFile retryGetAndCreateIndexFile() {
         IndexFile indexFile = null;
 
-        for (int times = 0; null == indexFile && times < MAX_TRY_IDX_CREATE; times++) {
+        for (int times = 0; times < MAX_TRY_IDX_CREATE; times++) {
             indexFile = this.getAndCreateLastIndexFile();
-            if (null != indexFile)
+            if (null != indexFile) {
                 break;
+            }
 
             try {
                 log.info("Tried to create index file " + times + " times");
@@ -289,7 +299,7 @@ public class IndexService {
         return indexFile;
     }
 
-    public IndexFile getAndCreateLastIndexFile() {
+    private IndexFile getAndCreateLastIndexFile() {
         IndexFile indexFile = null;
         IndexFile prevIndexFile = null;
         long lastUpdateEndPhyOffset = 0;
@@ -300,8 +310,10 @@ public class IndexService {
             if (!this.indexFileList.isEmpty()) {
                 IndexFile tmp = this.indexFileList.get(this.indexFileList.size() - 1);
                 if (!tmp.isWriteFull()) {
+                    //索引文件列表中最后一个索引文件中当前索引的数量 > 配置的规定数量
                     indexFile = tmp;
                 } else {
+                    //获取该索引文件中结尾的物理位点和存储时间
                     lastUpdateEndPhyOffset = tmp.getEndPhyOffset();
                     lastUpdateIndexTimestamp = tmp.getEndTimestamp();
                     prevIndexFile = tmp;
@@ -311,13 +323,14 @@ public class IndexService {
             this.readWriteLock.readLock().unlock();
         }
 
+        //索引文件列表为空，则新建索引并加入列表
         if (indexFile == null) {
             try {
-                String fileName =
-                    this.storePath + File.separator
-                        + UtilAll.timeMillisToHumanString(System.currentTimeMillis());
-                indexFile =
-                    new IndexFile(fileName, this.hashSlotNum, this.indexNum, lastUpdateEndPhyOffset,
+                String fileName = this.storePath +
+                        File.separator +
+                        UtilAll.timeMillisToHumanString(System.currentTimeMillis());
+
+                indexFile = new IndexFile(fileName, this.hashSlotNum, this.indexNum, lastUpdateEndPhyOffset,
                         lastUpdateIndexTimestamp);
                 this.readWriteLock.writeLock().lock();
                 this.indexFileList.add(indexFile);
@@ -328,6 +341,7 @@ public class IndexService {
             }
 
             if (indexFile != null) {
+                //定义守护线程刷新前一个文件
                 final IndexFile flushThisFile = prevIndexFile;
                 Thread flushThread = new Thread(new Runnable() {
                     @Override

@@ -32,9 +32,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class MappedFileTest {
     private final String storeMessage = "Once, there was a chance for me!";
 
+    /**
+     * 根据位点获取mappedFile
+     */
     @Test
     public void testSelectMappedBuffer() throws IOException {
-        MappedFile mappedFile = new MappedFile("target/unit_test_store/MappedFileTest/000", 1024 * 64);
+        MappedFile mappedFile = new MappedFile("/Users/weidian/test/00000000000000000000", 1024 * 64);
         boolean result = mappedFile.appendMessage(storeMessage.getBytes());
         assertThat(result).isTrue();
 

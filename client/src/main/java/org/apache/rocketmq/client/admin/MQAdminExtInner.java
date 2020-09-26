@@ -16,6 +16,9 @@
  */
 package org.apache.rocketmq.client.admin;
 
+/**
+ * @author weidian
+ */
 public interface MQAdminExtInner {
 
 }

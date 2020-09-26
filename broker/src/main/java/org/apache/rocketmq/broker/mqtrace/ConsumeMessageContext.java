@@ -19,6 +19,9 @@ package org.apache.rocketmq.broker.mqtrace;
 import java.util.Map;
 import org.apache.rocketmq.store.stats.BrokerStatsManager;
 
+/**
+ * @author weidian
+ */
 public class ConsumeMessageContext {
     private String consumerGroup;
     private String topic;

@@ -32,6 +32,7 @@ import java.nio.channels.OverlappingFileLockException;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.rocketmq.common.BrokerConfig;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.message.MessageExt;
@@ -46,6 +47,7 @@ import org.junit.runner.RunWith;
 import org.mockito.junit.MockitoJUnitRunner;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.in;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 
@@ -70,7 +72,9 @@ public class DefaultMessageStoreTest {
         messageStore.start();
     }
 
-    @Test(expected = OverlappingFileLockException.class)
+
+    //(expected = OverlappingFileLockException.class)
+    @Test
     public void test_repeat_restart() throws Exception {
         QUEUE_TOTAL = 1;
         MessageBody = StoreMessage.getBytes();
@@ -115,6 +119,9 @@ public class DefaultMessageStoreTest {
         return new DefaultMessageStore(messageStoreConfig, new BrokerStatsManager("simpleTest"), new MyMessageArrivingListener(), new BrokerConfig());
     }
 
+    /**
+     * 测试存取消息
+     */
     @Test
     public void testWriteAndRead() {
         long ipv4HostMsgs = 10;
@@ -130,16 +137,20 @@ public class DefaultMessageStoreTest {
             messageStore.putMessage(buildIPv6HostMessage());
         }
 
+        //等待5s是否有消息重放
         StoreTestUtil.waitCommitLogReput((DefaultMessageStore) messageStore);
 
         for (long i = 0; i < totalMsgs; i++) {
-            GetMessageResult result = messageStore.getMessage("GROUP_A", "TOPIC_A", 0, i, 1024 * 1024, null);
+            GetMessageResult result = messageStore.getMessage("GROUP_A", "FooBar", 0, i, 1024 * 1024, null);
             assertThat(result).isNotNull();
             result.release();
         }
         verifyThatMasterIsFunctional(totalMsgs, messageStore);
     }
 
+    /**
+     * 根据位点查询msg（第一个消息的位点）
+     */
     @Test
     public void testLookMessageByOffset_OffsetIsFirst() {
         final int totalCount = 10;
@@ -157,32 +168,56 @@ public class DefaultMessageStoreTest {
     }
 
     @Test
+    public void testBufferBytes() {
+        String testString = "呵呵哒";
+        ByteBuffer byteBuffer = ByteBuffer.allocate(1024);
+        byteBuffer.put(testString.getBytes());
+        byteBuffer.flip();
+        //long anInt = byteBuffer.getLong();
+        int anInt1 = byteBuffer.getInt();
+        System.out.println(anInt1);
+    }
+
+    /**
+     * 根据位点查询msg（最后一个消息的位点）
+     */
+    @Test
     public void testLookMessageByOffset_OffsetIsLast() {
         final int totalCount = 10;
         int queueId = new Random().nextInt(10);
         String topic = "FooBar";
+        //添加Message
         AppendMessageResult[] appendMessageResultArray = putMessages(totalCount, topic, queueId);
         int lastIndex = totalCount - 1;
         AppendMessageResult lastResult = appendMessageResultArray[lastIndex];
 
+        //根据位点寻找message扩展信息
         MessageExt messageExt = getDefaultMessageStore().lookMessageByOffset(lastResult.getWroteOffset(), lastResult.getWroteBytes());
 
+        //对比正常构建的结果和根据位点寻找到的message扩展信息是否一致
         assertThat(new String(messageExt.getBody())).isEqualTo(buildMessageBodyByOffset(StoreMessage, lastIndex));
     }
 
+    /**
+     * 根据位点查询msg（位点越界）
+     */
     @Test
     public void testLookMessageByOffset_OffsetIsOutOfBound() {
         final int totalCount = 10;
         int queueId = new Random().nextInt(10);
         String topic = "FooBar";
         AppendMessageResult[] appendMessageResultArray = putMessages(totalCount, topic, queueId);
+        //获取越界非法位点
         long lastOffset = getMaxOffset(appendMessageResultArray);
-
+        //根据非法位点查找msg扩展信息
         MessageExt messageExt = getDefaultMessageStore().lookMessageByOffset(lastOffset);
 
         assertThat(messageExt).isNull();
     }
 
+    /**
+     * 根据存储时间查询CQ中的消息位点
+     */
     @Test
     public void testGetOffsetInQueueByTime() {
         final int totalCount = 10;
@@ -190,11 +225,14 @@ public class DefaultMessageStoreTest {
         String topic = "FooBar";
         AppendMessageResult[] appendMessageResults = putMessages(totalCount, topic, queueId, true);
         //Thread.sleep(10);
+        //等待5s是否有消息重放
         StoreTestUtil.waitCommitLogReput((DefaultMessageStore) messageStore);
 
         ConsumeQueue consumeQueue = getDefaultMessageStore().findConsumeQueue(topic, queueId);
         for (AppendMessageResult appendMessageResult : appendMessageResults) {
+            //在CQ中查询指定存储时间的消息位点
             long offset = messageStore.getOffsetInQueueByTime(topic, queueId, appendMessageResult.getStoreTimestamp());
+            //根据起始索引获取mappedBuffer
             SelectMappedBufferResult indexBuffer = consumeQueue.getIndexBuffer(offset);
             assertThat(indexBuffer.getByteBuffer().getLong()).isEqualTo(appendMessageResult.getWroteOffset());
             assertThat(indexBuffer.getByteBuffer().getInt()).isEqualTo(appendMessageResult.getWroteBytes());
@@ -202,6 +240,11 @@ public class DefaultMessageStoreTest {
         }
     }
 
+    /**
+     * 根据存储时间查询CQ中的消息位点（前后偏移一定时间）
+     * {@link ConsumeQueue#getOffsetInQueueByTime(long)}
+     * 这个方法内部允许模糊搜索，如果无法精确匹配则选择最近的搜索结果返回
+     */
     @Test
     public void testGetOffsetInQueueByTime_TimestampIsSkewing() {
         final int totalCount = 10;
@@ -227,6 +270,11 @@ public class DefaultMessageStoreTest {
         }
     }
 
+    /**
+     * 根据存储时间查询CQ中的消息位点（前后偏移更大的时间）
+     * {@link ConsumeQueue#getOffsetInQueueByTime(long)}
+     * 这个方法内部允许模糊搜索，如果无法精确匹配则选择最近的搜索结果返回
+     */
     @Test
     public void testGetOffsetInQueueByTime_TimestampSkewingIsLarge() {
         final int totalCount = 10;
@@ -239,12 +287,18 @@ public class DefaultMessageStoreTest {
 
         ConsumeQueue consumeQueue = getDefaultMessageStore().findConsumeQueue(topic, queueId);
         for (AppendMessageResult appendMessageResult : appendMessageResults) {
+            //取队列的逻辑头位点
             long offset = messageStore.getOffsetInQueueByTime(topic, queueId, appendMessageResult.getStoreTimestamp() + skewing);
+            //取队列的逻辑尾位点
             long offset2 = messageStore.getOffsetInQueueByTime(topic, queueId, appendMessageResult.getStoreTimestamp() - skewing);
             SelectMappedBufferResult indexBuffer = consumeQueue.getIndexBuffer(offset);
             SelectMappedBufferResult indexBuffer2 = consumeQueue.getIndexBuffer(offset2);
-            assertThat(indexBuffer.getByteBuffer().getLong()).isEqualTo(appendMessageResults[totalCount - 1].getWroteOffset());
-            assertThat(indexBuffer.getByteBuffer().getInt()).isEqualTo(appendMessageResults[totalCount - 1].getWroteBytes());
+
+            long wroteOffset = indexBuffer.getByteBuffer().getLong();
+            int wroteBytes = indexBuffer.getByteBuffer().getInt();
+
+            assertThat(wroteOffset).isEqualTo(appendMessageResults[totalCount - 1].getWroteOffset());
+            assertThat(wroteBytes).isEqualTo(appendMessageResults[totalCount - 1].getWroteBytes());
             assertThat(indexBuffer2.getByteBuffer().getLong()).isEqualTo(appendMessageResults[0].getWroteOffset());
             assertThat(indexBuffer2.getByteBuffer().getInt()).isEqualTo(appendMessageResults[0].getWroteBytes());
 
@@ -253,6 +307,9 @@ public class DefaultMessageStoreTest {
         }
     }
 
+    /**
+     * 根据时间获取起始位点
+     */
     @Test
     public void testGetOffsetInQueueByTime_ConsumeQueueNotFound1() {
         final int totalCount = 10;
@@ -269,6 +326,9 @@ public class DefaultMessageStoreTest {
         assertThat(offset).isEqualTo(0);
     }
 
+    /**
+     * 通过错误的cqId来获取消息存储时间
+     */
     @Test
     public void testGetOffsetInQueueByTime_ConsumeQueueNotFound2() {
         final int totalCount = 10;
@@ -284,6 +344,9 @@ public class DefaultMessageStoreTest {
         assertThat(messageStoreTimeStamp).isEqualTo(-1);
     }
 
+    /**
+     * 通过非法的cqId来获取消息存储时间
+     */
     @Test
     public void testGetOffsetInQueueByTime_ConsumeQueueOffsetNotExist() {
         final int totalCount = 10;
@@ -300,8 +363,12 @@ public class DefaultMessageStoreTest {
         assertThat(messageStoreTimeStamp).isEqualTo(-1);
     }
 
+    /**
+     * 获取消息存储时间
+     */
     @Test
     public void testGetMessageStoreTimeStamp() {
+        //
         final int totalCount = 10;
         int queueId = 0;
         String topic = "FooBar";
@@ -324,6 +391,9 @@ public class DefaultMessageStoreTest {
         assertThat(storeTime).isEqualTo(-1);
     }
 
+    /**
+     * 比对请求存储的结果返回时间和取得消息的时间是否一致
+     */
     @Test
     public void testGetStoreTime_EverythingIsOk() {
         final int totalCount = 10;
@@ -337,11 +407,15 @@ public class DefaultMessageStoreTest {
         for (int i = 0; i < totalCount; i++) {
             SelectMappedBufferResult indexBuffer = consumeQueue.getIndexBuffer(i);
             long storeTime = getStoreTime(indexBuffer);
+            //添加消息的结果时间和指定索引取出消息的存储时间对比
             assertThat(storeTime).isEqualTo(appendMessageResults[i].getStoreTimestamp());
             indexBuffer.release();
         }
     }
 
+    /**
+     * 测试获取storeTime（物理位点比提交的最小位点小）
+     */
     @Test
     public void testGetStoreTime_PhyOffsetIsLessThanCommitLogMinOffset() {
         long phyOffset = -10;
@@ -354,10 +428,10 @@ public class DefaultMessageStoreTest {
         SelectMappedBufferResult result = new SelectMappedBufferResult(0, byteBuffer, size, mappedFile);
 
         long storeTime = getStoreTime(result);
-        result.release();
+         result.release();
 
         assertThat(storeTime).isEqualTo(-1);
-    }
+     }
 
     private DefaultMessageStore getDefaultMessageStore() {
         return (DefaultMessageStore) this.messageStore;
@@ -368,15 +442,20 @@ public class DefaultMessageStoreTest {
     }
 
     private AppendMessageResult[] putMessages(int totalCount, String topic, int queueId, boolean interval) {
+        //初始化添加msg结果数组
         AppendMessageResult[] appendMessageResultArray = new AppendMessageResult[totalCount];
         for (int i = 0; i < totalCount; i++) {
+            //构建一个message
             String messageBody = buildMessageBodyByOffset(StoreMessage, i);
-
-            MessageExtBrokerInner msgInner =
-                i < totalCount / 2 ? buildMessage(messageBody.getBytes(), topic) : buildIPv6HostMessage(messageBody.getBytes(), topic);
+            //初始化msgInner
+            MessageExtBrokerInner msgInner = i < totalCount / 2 ? buildMessage(messageBody.getBytes(), topic) : buildIPv6HostMessage(messageBody.getBytes(), topic);
+            //设置队列id
             msgInner.setQueueId(queueId);
+            //添加到message存储服务
             PutMessageResult result = messageStore.putMessage(msgInner);
+            //获取添加message结果
             appendMessageResultArray[i] = result.getAppendMessageResult();
+            //添加是否成功
             assertThat(result.getPutMessageStatus()).isEqualTo(PutMessageStatus.PUT_OK);
             if (interval) {
                 try {
@@ -478,6 +557,11 @@ public class DefaultMessageStoreTest {
         }
     }
 
+
+    /**
+     * 测试拉取的大小是否符合预期
+     * @throws Exception
+     */
     @Test
     public void testPullSize() throws Exception {
         String topic = "pullSizeTopic";
@@ -507,6 +591,10 @@ public class DefaultMessageStoreTest {
 
     }
 
+    /**
+     * 测试恢复能力，在每次重启store服务的时候，消息是否丢失
+     * @throws Exception
+     */
     @Test
     public void testRecover() throws Exception {
         String topic = "recoverTopic";
@@ -611,7 +699,7 @@ public class DefaultMessageStoreTest {
 
         FileChannel fileChannel = new RandomAccessFile(file, "rw").getChannel();
         MappedByteBuffer mappedByteBuffer = fileChannel.map(FileChannel.MapMode.READ_WRITE, 0, 1024 * 1024 * 10);
-
+        int offset1 = (int) offset;
         int bodyLen = mappedByteBuffer.getInt((int) offset + 84);
         int topicLenIndex = (int) offset + 84 + bodyLen + 4;
         mappedByteBuffer.position(topicLenIndex);
@@ -628,7 +716,7 @@ public class DefaultMessageStoreTest {
     private class MyMessageArrivingListener implements MessageArrivingListener {
         @Override
         public void arriving(String topic, int queueId, long logicOffset, long tagsCode, long msgStoreTime,
-            byte[] filterBitMap, Map<String, String> properties) {
+                             byte[] filterBitMap, Map<String, String> properties) {
         }
     }
 }

@@ -24,27 +24,80 @@ import java.nio.ByteBuffer;
 import org.apache.rocketmq.common.TopicFilterType;
 import org.apache.rocketmq.common.sysflag.MessageSysFlag;
 
+/**
+ * @author weidian
+ */
 public class MessageExt extends Message {
     private static final long serialVersionUID = 5720810158625748049L;
 
+    /**
+     * broker名字
+     */
     private String brokerName;
 
+    /**
+     * 记录MessageQueue编号，消息会被发送到Topic的MessageQueue
+     */
     private int queueId;
 
+    /**
+     * 记录消息在Broker的存盘大小
+     */
     private int storeSize;
 
+    /**
+     * 记录ConsumerQueue中的偏移量
+     */
     private long queueOffset;
+
+    /**
+     * 记录一些系统标志的开关状态，MessageSysFlag中定义了系统标识
+     */
     private int sysFlag;
+
+    /**
+     * 消息创建时间，在Producer发送消息时设置
+     */
     private long bornTimestamp;
+
+    /**
+     * producer的发送地址
+     */
     private SocketAddress bornHost;
 
+    /**
+     * 消息存储时间
+     */
     private long storeTimestamp;
+
+    /**
+     * broker的存储地址
+     */
     private SocketAddress storeHost;
+
+    /**
+     * 消息id
+     */
     private String msgId;
+
+    /**
+     * 记录在broker中的偏移量
+     */
     private long commitLogOffset;
+
+    /**
+     * 消息内容CRC校验值
+     */
     private int bodyCRC;
+
+    /**
+     * 消息重试次数
+     */
     private int reconsumeTimes;
 
+    /**
+     * 事务详细相关字段
+     */
     private long preparedTransactionOffset;
 
     public MessageExt() {
@@ -68,7 +121,7 @@ public class MessageExt extends Message {
         return TopicFilterType.SINGLE_TAG;
     }
 
-    public static ByteBuffer socketAddress2ByteBuffer(final SocketAddress socketAddress, final ByteBuffer byteBuffer) {
+    private static ByteBuffer socketAddress2ByteBuffer(final SocketAddress socketAddress, final ByteBuffer byteBuffer) {
         InetSocketAddress inetSocketAddress = (InetSocketAddress) socketAddress;
         InetAddress address = inetSocketAddress.getAddress();
         if (address instanceof Inet4Address) {

@@ -48,8 +48,9 @@ public class DefaultMQPushConsumerImplTest {
         consumer.setConsumeThreadMax(9);
 
         consumer.registerMessageListener(new MessageListenerConcurrently() {
+            @Override
             public ConsumeConcurrentlyStatus consumeMessage(List<MessageExt> msgs,
-                ConsumeConcurrentlyContext context) {
+                                                            ConsumeConcurrentlyContext context) {
                 System.out.println(" Receive New Messages: " + msgs);
                 return ConsumeConcurrentlyStatus.CONSUME_SUCCESS;
             }

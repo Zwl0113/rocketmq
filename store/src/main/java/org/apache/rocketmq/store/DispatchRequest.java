@@ -18,6 +18,9 @@ package org.apache.rocketmq.store;
 
 import java.util.Map;
 
+/**
+ * @author weidian
+ */
 public class DispatchRequest {
     private final String topic;
     private final int queueId;
@@ -35,8 +38,10 @@ public class DispatchRequest {
     private final Map<String, String> propertiesMap;
     private byte[] bitMap;
 
-    private int bufferSize = -1;//the buffer size maybe larger than the msg size if the message is wrapped by something
-
+    /**
+     * the buffer size maybe larger than the msg size if the message is wrapped by something
+     */
+    private int bufferSize = -1;
     public DispatchRequest(
         final String topic,
         final int queueId,

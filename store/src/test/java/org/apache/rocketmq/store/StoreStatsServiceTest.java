@@ -41,7 +41,7 @@ public class StoreStatsServiceTest {
                             barrier.await();
                             AtomicLong atomicLong = storeStatsService.getSinglePutMessageTopicSizeTotal("test");
                             if (reference.compareAndSet(null, atomicLong)) {
-                            } else if (reference.get() != atomicLong) {
+                            } else if (!reference.get().equals(atomicLong)) {
                                 throw new RuntimeException("Reference should be same!");
                             }
                         } catch (InterruptedException | BrokenBarrierException e) {

@@ -23,10 +23,13 @@ import org.apache.rocketmq.client.exception.MQClientException;
 
 /**
  * Push consumer
+ * @author weidian
  */
 public interface MQPushConsumer extends MQConsumer {
+
     /**
-     * Start the consumer
+     * 开启一个mq消费服务
+     * @throws MQClientException
      */
     void start() throws MQClientException;
 
@@ -41,16 +44,26 @@ public interface MQPushConsumer extends MQConsumer {
     @Deprecated
     void registerMessageListener(MessageListener messageListener);
 
+    /**
+     * 注册并发消息监听器
+     * @param messageListener
+     */
     void registerMessageListener(final MessageListenerConcurrently messageListener);
 
+    /**
+     * 注册有序消息监听器
+     * @param messageListener
+     */
     void registerMessageListener(final MessageListenerOrderly messageListener);
 
     /**
      * Subscribe some topic
-     *
-     * @param subExpression subscription expression.it only support or operation such as "tag1 || tag2 || tag3" <br> if
+     * subscription expression.it only support or operation such as "tag1 || tag2 || tag3" <br> if
      * null or * expression,meaning subscribe
-     * all
+     * 订阅一些topic,订阅表达式，仅支持操作tag1 || tag2 || tag3
+     * @param topic
+     * @param subExpression
+     * @throws MQClientException
      */
     void subscribe(final String topic, final String subExpression) throws MQClientException;
 
@@ -63,9 +76,19 @@ public interface MQPushConsumer extends MQConsumer {
      * @param fullClassName full class name,must extend org.apache.rocketmq.common.filter. MessageFilter
      * @param filterClassSource class source code,used UTF-8 file encoding,must be responsible for your code safety
      */
+
+    /**
+     * This method will be removed in the version 5.0.0,because filterServer was removed,and method <code>subscribe(final String topic, final MessageSelector messageSelector)</code>
+     * is recommended.
+     * Subscribe some topic
+     *
+     * @param topic
+     * @param fullClassName   fullClassName full class name,must extend org.apache.rocketmq.common.filter. MessageFilter
+     * @param filterClassSource  class source code,used UTF-8 file encoding,must be responsible for your code safety
+     * @throws MQClientException
+     */
     @Deprecated
-    void subscribe(final String topic, final String fullClassName,
-        final String filterClassSource) throws MQClientException;
+    void subscribe(final String topic, final String fullClassName, final String filterClassSource) throws MQClientException;
 
     /**
      * Subscribe some topic with selector.
@@ -81,8 +104,9 @@ public interface MQPushConsumer extends MQConsumer {
      * <p>
      * Choose SQL92: {@link MessageSelector#bySql(java.lang.String)}
      * </p>
-     *
+     * @param topic
      * @param selector message selector({@link MessageSelector}), can be null.
+     * @throws MQClientException
      */
     void subscribe(final String topic, final MessageSelector selector) throws MQClientException;
 
@@ -95,6 +119,7 @@ public interface MQPushConsumer extends MQConsumer {
 
     /**
      * Update the consumer thread pool size Dynamically
+     * @param corePoolSize
      */
     void updateCorePoolSize(int corePoolSize);
 

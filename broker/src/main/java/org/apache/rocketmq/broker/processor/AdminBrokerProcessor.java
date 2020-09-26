@@ -137,6 +137,9 @@ import org.apache.rocketmq.store.PutMessageResult;
 import org.apache.rocketmq.store.PutMessageStatus;
 import org.apache.rocketmq.store.SelectMappedBufferResult;
 
+/**
+ * @author weidian
+ */
 public class AdminBrokerProcessor extends AsyncNettyRequestProcessor implements NettyRequestProcessor {
     private static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
     private final BrokerController brokerController;
@@ -147,91 +150,132 @@ public class AdminBrokerProcessor extends AsyncNettyRequestProcessor implements 
 
     @Override
     public RemotingCommand processRequest(ChannelHandlerContext ctx,
-        RemotingCommand request) throws RemotingCommandException {
+                                          RemotingCommand request) throws RemotingCommandException {
         switch (request.getCode()) {
             case RequestCode.UPDATE_AND_CREATE_TOPIC:
+                //更新并创建topic
                 return this.updateAndCreateTopic(ctx, request);
             case RequestCode.DELETE_TOPIC_IN_BROKER:
+                //在broker中删除topic
                 return this.deleteTopic(ctx, request);
             case RequestCode.GET_ALL_TOPIC_CONFIG:
+                //获取所有的topic
                 return this.getAllTopicConfig(ctx, request);
             case RequestCode.UPDATE_BROKER_CONFIG:
+                //更新broker配置
                 return this.updateBrokerConfig(ctx, request);
             case RequestCode.GET_BROKER_CONFIG:
+                //获取broker配置
                 return this.getBrokerConfig(ctx, request);
             case RequestCode.SEARCH_OFFSET_BY_TIMESTAMP:
+                //根据时间戳获取位点
                 return this.searchOffsetByTimestamp(ctx, request);
             case RequestCode.GET_MAX_OFFSET:
+                //获取最大位点
                 return this.getMaxOffset(ctx, request);
             case RequestCode.GET_MIN_OFFSET:
+                //获取最小位点
                 return this.getMinOffset(ctx, request);
             case RequestCode.GET_EARLIEST_MSG_STORETIME:
+                //获取最早的消息存储时间
                 return this.getEarliestMsgStoretime(ctx, request);
             case RequestCode.GET_BROKER_RUNTIME_INFO:
+                //获取broker的运行信息
                 return this.getBrokerRuntimeInfo(ctx, request);
             case RequestCode.LOCK_BATCH_MQ:
+                //批量消息上锁
                 return this.lockBatchMQ(ctx, request);
             case RequestCode.UNLOCK_BATCH_MQ:
+                //批量消息解锁
                 return this.unlockBatchMQ(ctx, request);
             case RequestCode.UPDATE_AND_CREATE_SUBSCRIPTIONGROUP:
+                //更新并创建订阅组
                 return this.updateAndCreateSubscriptionGroup(ctx, request);
             case RequestCode.GET_ALL_SUBSCRIPTIONGROUP_CONFIG:
+                //获取所有订阅组的配置
                 return this.getAllSubscriptionGroup(ctx, request);
             case RequestCode.DELETE_SUBSCRIPTIONGROUP:
+                //删除订阅组
                 return this.deleteSubscriptionGroup(ctx, request);
             case RequestCode.GET_TOPIC_STATS_INFO:
+                //获取topic状态的信息
                 return this.getTopicStatsInfo(ctx, request);
             case RequestCode.GET_CONSUMER_CONNECTION_LIST:
+                //获取消费者连接列表
                 return this.getConsumerConnectionList(ctx, request);
             case RequestCode.GET_PRODUCER_CONNECTION_LIST:
+                //获取生产者连接列表
                 return this.getProducerConnectionList(ctx, request);
             case RequestCode.GET_CONSUME_STATS:
+                //获取消费状态
                 return this.getConsumeStats(ctx, request);
             case RequestCode.GET_ALL_CONSUMER_OFFSET:
+                //获取所有消费者的位点
                 return this.getAllConsumerOffset(ctx, request);
             case RequestCode.GET_ALL_DELAY_OFFSET:
+                //获取所有延迟位点
                 return this.getAllDelayOffset(ctx, request);
             case RequestCode.INVOKE_BROKER_TO_RESET_OFFSET:
+                //调用broker去重置位点
                 return this.resetOffset(ctx, request);
             case RequestCode.INVOKE_BROKER_TO_GET_CONSUMER_STATUS:
+                //调用broker去获取消费者状态
                 return this.getConsumerStatus(ctx, request);
             case RequestCode.QUERY_TOPIC_CONSUME_BY_WHO:
+                //查询topic被谁消费
                 return this.queryTopicConsumeByWho(ctx, request);
             case RequestCode.REGISTER_FILTER_SERVER:
+                //注册过滤服务器
                 return this.registerFilterServer(ctx, request);
             case RequestCode.QUERY_CONSUME_TIME_SPAN:
+                //查询消费时间跨度
                 return this.queryConsumeTimeSpan(ctx, request);
             case RequestCode.GET_SYSTEM_TOPIC_LIST_FROM_BROKER:
+                //从broker获取系统的topic列表
                 return this.getSystemTopicListFromBroker(ctx, request);
             case RequestCode.CLEAN_EXPIRED_CONSUMEQUEUE:
+                //清理过期的cq
                 return this.cleanExpiredConsumeQueue();
             case RequestCode.CLEAN_UNUSED_TOPIC:
+                //清理未使用的topic
                 return this.cleanUnusedTopic();
             case RequestCode.GET_CONSUMER_RUNNING_INFO:
+                //获取消费者运行信息
                 return this.getConsumerRunningInfo(ctx, request);
             case RequestCode.QUERY_CORRECTION_OFFSET:
+                //查询修正位点
                 return this.queryCorrectionOffset(ctx, request);
             case RequestCode.CONSUME_MESSAGE_DIRECTLY:
+                //直接消费消息
                 return this.consumeMessageDirectly(ctx, request);
             case RequestCode.CLONE_GROUP_OFFSET:
+                //克隆分组位点
                 return this.cloneGroupOffset(ctx, request);
             case RequestCode.VIEW_BROKER_STATS_DATA:
                 return ViewBrokerStatsData(ctx, request);
             case RequestCode.GET_BROKER_CONSUME_STATS:
+                //从broker拉取所有消费状态
                 return fetchAllConsumeStatsInBroker(ctx, request);
             case RequestCode.QUERY_CONSUME_QUEUE:
+                //查询cq
                 return queryConsumeQueue(ctx, request);
             case RequestCode.UPDATE_AND_CREATE_ACL_CONFIG:
+                //更新和创建acl的config
                 return updateAndCreateAccessConfig(ctx, request);
             case RequestCode.DELETE_ACL_CONFIG:
+                //删除acl的config
                 return deleteAccessConfig(ctx, request);
             case RequestCode.GET_BROKER_CLUSTER_ACL_INFO:
+                //获取broker集群的acl信息
                 return getBrokerAclConfigVersion(ctx, request);
             case RequestCode.UPDATE_GLOBAL_WHITE_ADDRS_CONFIG:
+                //更新全局白名单的地址配置
                 return updateGlobalWhiteAddrsConfig(ctx, request);
             case RequestCode.RESUME_CHECK_HALF_MESSAGE:
+                //从新消费并检查一半的消息？
                 return resumeCheckHalfMessage(ctx, request);
             case RequestCode.GET_BROKER_CLUSTER_ACL_CONFIG:
+                //获取broker集群的acl配置
                 return getBrokerClusterAclConfig(ctx, request);
             default:
                 break;
@@ -245,11 +289,9 @@ public class AdminBrokerProcessor extends AsyncNettyRequestProcessor implements 
         return false;
     }
 
-    private synchronized RemotingCommand updateAndCreateTopic(ChannelHandlerContext ctx,
-        RemotingCommand request) throws RemotingCommandException {
+    private synchronized RemotingCommand updateAndCreateTopic(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
         final RemotingCommand response = RemotingCommand.createResponseCommand(null);
-        final CreateTopicRequestHeader requestHeader =
-            (CreateTopicRequestHeader) request.decodeCommandCustomHeader(CreateTopicRequestHeader.class);
+        final CreateTopicRequestHeader requestHeader = (CreateTopicRequestHeader) request.decodeCommandCustomHeader(CreateTopicRequestHeader.class);
         log.info("updateAndCreateTopic called by {}", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
 
         if (requestHeader.getTopic().equals(this.brokerController.getBrokerConfig().getBrokerClusterName())) {
@@ -288,15 +330,14 @@ public class AdminBrokerProcessor extends AsyncNettyRequestProcessor implements 
         return null;
     }
 
-    private synchronized RemotingCommand deleteTopic(ChannelHandlerContext ctx,
-        RemotingCommand request) throws RemotingCommandException {
+    private synchronized RemotingCommand deleteTopic(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
         final RemotingCommand response = RemotingCommand.createResponseCommand(null);
-        DeleteTopicRequestHeader requestHeader =
-            (DeleteTopicRequestHeader) request.decodeCommandCustomHeader(DeleteTopicRequestHeader.class);
+        DeleteTopicRequestHeader requestHeader = (DeleteTopicRequestHeader) request.decodeCommandCustomHeader(DeleteTopicRequestHeader.class);
 
         log.info("deleteTopic called by {}", RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
 
-        this.brokerController.getTopicConfigManager().deleteTopicConfig(requestHeader.getTopic());
+        this.brokerController.getTopicConfigManager()
+                             .deleteTopicConfig(requestHeader.getTopic());
         this.brokerController.getMessageStore()
             .cleanUnusedTopic(this.brokerController.getTopicConfigManager().getTopicConfigTable().keySet());
 
@@ -639,6 +680,7 @@ public class AdminBrokerProcessor extends AsyncNettyRequestProcessor implements 
             requestBody.getClientId());
 
         LockBatchResponseBody responseBody = new LockBatchResponseBody();
+        //消息队列上锁ok
         responseBody.setLockOKMQSet(lockOKMQSet);
 
         response.setBody(responseBody.encode());
@@ -769,8 +811,7 @@ public class AdminBrokerProcessor extends AsyncNettyRequestProcessor implements 
         return response;
     }
 
-    private RemotingCommand getConsumerConnectionList(ChannelHandlerContext ctx,
-        RemotingCommand request) throws RemotingCommandException {
+    private RemotingCommand getConsumerConnectionList(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
         final RemotingCommand response = RemotingCommand.createResponseCommand(null);
         final GetConsumerConnectionListRequestHeader requestHeader =
             (GetConsumerConnectionListRequestHeader) request.decodeCommandCustomHeader(GetConsumerConnectionListRequestHeader.class);
@@ -1193,7 +1234,7 @@ public class AdminBrokerProcessor extends AsyncNettyRequestProcessor implements 
             byte[] body = new byte[selectMappedBufferResult.getSize()];
             selectMappedBufferResult.getByteBuffer().get(body);
             request.setBody(body);
-        } catch (UnknownHostException e) {
+        } catch (UnknownHostException ignored) {
         } finally {
             if (selectMappedBufferResult != null) {
                 selectMappedBufferResult.release();
@@ -1245,8 +1286,7 @@ public class AdminBrokerProcessor extends AsyncNettyRequestProcessor implements 
         return response;
     }
 
-    private RemotingCommand ViewBrokerStatsData(ChannelHandlerContext ctx,
-        RemotingCommand request) throws RemotingCommandException {
+    private RemotingCommand ViewBrokerStatsData(ChannelHandlerContext ctx, RemotingCommand request) throws RemotingCommandException {
         final ViewBrokerStatsDataRequestHeader requestHeader =
             (ViewBrokerStatsDataRequestHeader) request.decodeCommandCustomHeader(ViewBrokerStatsDataRequestHeader.class);
         final RemotingCommand response = RemotingCommand.createResponseCommand(null);

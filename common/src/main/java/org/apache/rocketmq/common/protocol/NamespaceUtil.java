@@ -84,7 +84,7 @@ public class NamespaceUtil {
         if (StringUtils.isEmpty(namespace) || StringUtils.isEmpty(resourceWithOutNamespace)) {
             return resourceWithOutNamespace;
         }
-
+        //判断是否是系统资源或已经拼好命名空间的资源
         if (isSystemResource(resourceWithOutNamespace) || isAlreadyWithNamespace(resourceWithOutNamespace, namespace)) {
             return resourceWithOutNamespace;
         }
@@ -108,9 +108,9 @@ public class NamespaceUtil {
         if (StringUtils.isEmpty(namespace) || StringUtils.isEmpty(resource) || isSystemResource(resource)) {
             return false;
         }
-
+        //删除重试前缀和死信前缀
         String resourceWithoutRetryAndDLQ = withOutRetryAndDLQ(resource);
-
+        //判断资源是否已传入的命名空间开头
         return resourceWithoutRetryAndDLQ.startsWith(namespace + NAMESPACE_SEPARATOR);
     }
 
@@ -162,10 +162,20 @@ public class NamespaceUtil {
         return MixAll.AUTO_CREATE_TOPIC_KEY_TOPIC.equals(resource);
     }
 
+    /**
+     * 是否是重试topic
+     * @param resource
+     * @return
+     */
     public static boolean isRetryTopic(String resource) {
         return StringUtils.isNotBlank(resource) && resource.startsWith(MixAll.RETRY_GROUP_TOPIC_PREFIX);
     }
 
+    /**
+     * 是否是死信topic
+     * @param resource
+     * @return
+     */
     public static boolean isDLQTopic(String resource) {
         return StringUtils.isNotBlank(resource) && resource.startsWith(MixAll.DLQ_GROUP_TOPIC_PREFIX);
     }

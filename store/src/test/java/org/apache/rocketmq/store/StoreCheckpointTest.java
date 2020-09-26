@@ -32,7 +32,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class StoreCheckpointTest {
     @Test
     public void testWriteAndRead() throws IOException {
-        StoreCheckpoint storeCheckpoint = new StoreCheckpoint("target/checkpoint_test/0000");
+        StoreCheckpoint storeCheckpoint = new StoreCheckpoint("/Users/weidian/test/0000");
         long physicMsgTimestamp = 0xAABB;
         long logicsMsgTimestamp = 0xCCDD;
         storeCheckpoint.setPhysicMsgTimestamp(physicMsgTimestamp);
@@ -42,7 +42,7 @@ public class StoreCheckpointTest {
         long diff = physicMsgTimestamp - storeCheckpoint.getMinTimestamp();
         assertThat(diff).isEqualTo(3000);
         storeCheckpoint.shutdown();
-        storeCheckpoint = new StoreCheckpoint("target/checkpoint_test/0000");
+        storeCheckpoint = new StoreCheckpoint("/Users/weidian/test/0000");
         assertThat(storeCheckpoint.getPhysicMsgTimestamp()).isEqualTo(physicMsgTimestamp);
         assertThat(storeCheckpoint.getLogicsMsgTimestamp()).isEqualTo(logicsMsgTimestamp);
     }

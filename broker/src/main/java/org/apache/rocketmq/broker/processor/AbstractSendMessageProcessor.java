@@ -54,6 +54,9 @@ import org.apache.rocketmq.remoting.netty.NettyRequestProcessor;
 import org.apache.rocketmq.remoting.protocol.RemotingCommand;
 import org.apache.rocketmq.store.MessageExtBrokerInner;
 
+/**
+ * @author weidian
+ */
 public abstract class AbstractSendMessageProcessor extends AsyncNettyRequestProcessor implements NettyRequestProcessor {
     protected static final InternalLogger log = InternalLoggerFactory.getLogger(LoggerName.BROKER_LOGGER_NAME);
 
@@ -255,21 +258,17 @@ public abstract class AbstractSendMessageProcessor extends AsyncNettyRequestProc
                     final SendMessageRequestHeader requestHeader = parseRequestHeader(request);
 
                     String namespace = NamespaceUtil.getNamespaceFromResource(requestHeader.getTopic());
-                    if (null != requestHeader) {
-                        context.setNamespace(namespace);
-                        context.setProducerGroup(requestHeader.getProducerGroup());
-                        context.setTopic(requestHeader.getTopic());
-                        context.setBodyLength(request.getBody().length);
-                        context.setMsgProps(requestHeader.getProperties());
-                        context.setBornHost(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
-                        context.setBrokerAddr(this.brokerController.getBrokerAddr());
-                        context.setQueueId(requestHeader.getQueueId());
-                    }
+                    context.setNamespace(namespace);
+                    context.setProducerGroup(requestHeader.getProducerGroup());
+                    context.setTopic(requestHeader.getTopic());
+                    context.setBodyLength(request.getBody().length);
+                    context.setMsgProps(requestHeader.getProperties());
+                    context.setBornHost(RemotingHelper.parseChannelRemoteAddr(ctx.channel()));
+                    context.setBrokerAddr(this.brokerController.getBrokerAddr());
+                    context.setQueueId(requestHeader.getQueueId());
 
                     hook.sendMessageBefore(context);
-                    if (requestHeader != null) {
-                        requestHeader.setProperties(context.getMsgProps());
-                    }
+                    requestHeader.setProperties(context.getMsgProps());
                 } catch (Throwable e) {
                     // Ignore
                 }
@@ -288,21 +287,19 @@ public abstract class AbstractSendMessageProcessor extends AsyncNettyRequestProc
                 requestHeaderV2 =
                     (SendMessageRequestHeaderV2) request
                         .decodeCommandCustomHeader(SendMessageRequestHeaderV2.class);
+                break;
             case RequestCode.SEND_MESSAGE:
-                if (null == requestHeaderV2) {
-                    requestHeader =
-                        (SendMessageRequestHeader) request
-                            .decodeCommandCustomHeader(SendMessageRequestHeader.class);
-                } else {
-                    requestHeader = SendMessageRequestHeaderV2.createSendMessageRequestHeaderV1(requestHeaderV2);
-                }
+                requestHeader =
+                    (SendMessageRequestHeader) request
+                        .decodeCommandCustomHeader(SendMessageRequestHeader.class);
+                break;
             default:
                 break;
         }
         return requestHeader;
     }
 
-    public void executeSendMessageHookAfter(final RemotingCommand response, final SendMessageContext context) {
+    void executeSendMessageHookAfter(final RemotingCommand response, final SendMessageContext context) {
         if (hasSendMessageHook()) {
             for (SendMessageHook hook : this.sendMessageHookList) {
                 try {

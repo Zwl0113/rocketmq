@@ -20,13 +20,41 @@ import java.nio.ByteBuffer;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * @author weidian
+ * description:一个索引文件对应一个文件头
+ */
 public class IndexHeader {
+    /**
+     * 文件头的大小
+     */
     public static final int INDEX_HEADER_SIZE = 40;
+
+    /**
+     *  第一个索引的存储时间
+     */
     private static int beginTimestampIndex = 0;
+
+    /**
+     * 最后一个索引的存储时间
+     */
     private static int endTimestampIndex = 8;
+
+    /**
+     * 第一个索引的物理位点
+     */
     private static int beginPhyoffsetIndex = 16;
+    /**
+     * 最后一个索引的物理位点
+     */
     private static int endPhyoffsetIndex = 24;
+    /**
+     * 索引文件中的hash槽数量
+     */
     private static int hashSlotcountIndex = 32;
+    /**
+     * 索引文件的索引数量
+     */
     private static int indexCountIndex = 36;
     private final ByteBuffer byteBuffer;
     private AtomicLong beginTimestamp = new AtomicLong(0);
