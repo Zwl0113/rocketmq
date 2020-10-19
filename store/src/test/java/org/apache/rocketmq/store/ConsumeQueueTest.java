@@ -25,6 +25,7 @@ import java.net.SocketAddress;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Map;
+
 import org.apache.rocketmq.common.BrokerConfig;
 import org.apache.rocketmq.common.UtilAll;
 import org.apache.rocketmq.common.message.MessageDecoder;
@@ -123,14 +124,14 @@ public class ConsumeQueueTest {
 
     private DefaultMessageStore gen() throws Exception {
         MessageStoreConfig messageStoreConfig = buildStoreConfig(
-            commitLogFileSize, cqFileSize, true, cqExtFileSize
+                commitLogFileSize, cqFileSize, true, cqExtFileSize
         );
 
         BrokerConfig brokerConfig = new BrokerConfig();
 
         DefaultMessageStore master = new DefaultMessageStore(
-            messageStoreConfig,
-            new BrokerStatsManager(brokerConfig.getBrokerClusterName()),
+                messageStoreConfig,
+                new BrokerStatsManager(brokerConfig.getBrokerClusterName()),
                 (topic, queueId, logicOffset, tagsCode, msgStoreTime, filterBitMap, properties) -> {
                 }
                 , brokerConfig);
@@ -200,7 +201,7 @@ public class ConsumeQueueTest {
             assertThat(cq).isNotNull();
 
             Object dispatchResult = method.invoke(cq, dispatchRequest.getCommitLogOffset(),
-                dispatchRequest.getMsgSize(), dispatchRequest.getTagsCode(), dispatchRequest.getConsumeQueueOffset());
+                    dispatchRequest.getMsgSize(), dispatchRequest.getTagsCode(), dispatchRequest.getConsumeQueueOffset());
 
             assertThat(Boolean.parseBoolean(dispatchResult.toString())).isTrue();
 

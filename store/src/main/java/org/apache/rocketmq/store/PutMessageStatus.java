@@ -16,15 +16,47 @@
  */
 package org.apache.rocketmq.store;
 
+/**
+ * @author weidian
+ */
+
 public enum PutMessageStatus {
+    /**
+     * 投递Message成功
+     */
     PUT_OK,
+    /**
+     * 刷盘超时
+     */
     FLUSH_DISK_TIMEOUT,
+    /**
+     * 刷slave节点超时
+     */
     FLUSH_SLAVE_TIMEOUT,
+    /**
+     * slave节点不可用
+     */
     SLAVE_NOT_AVAILABLE,
+    /**
+     * 服务不可用
+     */
     SERVICE_NOT_AVAILABLE,
+    /**
+     * 创建MappedFile失败
+     */
     CREATE_MAPEDFILE_FAILED,
+    /**
+     * 消息非法
+     */
     MESSAGE_ILLEGAL,
+    /**
+     * 消息的属性大小超过指定长度
+     */
     PROPERTIES_SIZE_EXCEEDED,
+    /**
+     * 操作系统内存负载高
+     */
     OS_PAGECACHE_BUSY,
+
     UNKNOWN_ERROR,
 }

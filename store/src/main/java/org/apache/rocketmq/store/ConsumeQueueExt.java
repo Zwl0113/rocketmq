@@ -417,7 +417,7 @@ public class ConsumeQueueExt {
             + 8 * 2 // msg time + tagCode
             + 2; // bitMapSize
 
-        public static final int MAX_EXT_UNIT_SIZE = Short.MAX_VALUE;
+        static final int MAX_EXT_UNIT_SIZE = Short.MAX_VALUE;
 
         public CqExtUnit() {
         }
@@ -536,8 +536,7 @@ public class ConsumeQueueExt {
          * Calculate unit size by current data.
          */
         private int calcUnitSize() {
-            int sizeTemp = MIN_EXT_UNIT_SIZE + (filterBitMap == null ? 0 : filterBitMap.length);
-            return sizeTemp;
+            return MIN_EXT_UNIT_SIZE + (filterBitMap == null ? 0 : filterBitMap.length);
         }
 
         public long getTagsCode() {
